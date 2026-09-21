@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-emergency: #dc2626;
+  --color-emergency-bright: #ef4444;
+  --color-surface: #0a0a0b;
+  --color-surface-raised: #17171a;
+  --color-surface-step: #1f1f23;
+  --color-border-subtle: #2e2e35;
+  --color-ink: #f7f7f8;
+  --color-ink-muted: #a1a1aa;
+  --color-warn: #f59e0b;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  /* An emergency screen is never in light mode - it is read at night, at arm's
+     length, one-handed. High contrast is fixed, not a preference. */
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Prevent the pull-to-refresh gesture destroying a protocol mid-use. */
+  overscroll-behavior-y: none;
+}
+
+/* Kill the 300ms tap delay and the grey flash on the primary actions. */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  70% { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.pulse-ring {
+  animation: pulse-ring 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+@keyframes beat {
+  0% { transform: scale(1); }
+  12% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.beat {
+  animation: beat 545ms ease-out infinite; /* 110 bpm */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring,
+  .beat {
+    animation: none;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Emita",
+  "short_name": "Emita",
+  "description": "Instant routing to verified emergency first-aid protocols.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "categories": ["medical", "health", "utilities"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
