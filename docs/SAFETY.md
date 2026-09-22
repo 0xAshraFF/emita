@@ -1,10 +1,21 @@
 # Safety model
 
-## The threshold is not the safety mechanism
+## What confidence does and does not mean
 
-A calibrated 0.95 means the router is right about 95% of the time — so roughly
-**one in twenty high-confidence routes is wrong**, and wrong routes here are
-dangerous:
+**Correction to an earlier version of this document.** Choice confidence
+summarizes **how concentrated the probability distribution is** — not the
+probability that the answer is correct, and not permission to act. TypeSafe's
+guidance is explicit on this. Two consequences:
+
+- A confident model can be confidently wrong. 0.98 is not "98% likely correct."
+- Low confidence is not automatically alarming. Probability also spreads when
+  two labels genuinely both fit — which, for "is this choking or cardiac
+  arrest," is a real and clinically meaningful tie rather than model failure.
+
+So the thresholds here gate **how much of the UI we commit to**. They are not a
+correctness guarantee and they are not the safety mechanism.
+
+The misroutes we are defending against:
 
 | Misroute | Harm |
 |---|---|
@@ -12,7 +23,7 @@ dangerous:
 | Cardiac arrest → choking | Back blows instead of compressions; delay kills |
 | Bleeding → anything else | They bleed out while following the wrong steps |
 
-The threshold is one layer. These are the others, and none of them are optional:
+These are the actual layers, and none of them are optional:
 
 ### 1. The call button is never gated
 
@@ -81,6 +92,13 @@ This has not been reviewed by counsel. Do so before shipping.
 
 ## Known gaps
 
+- **The thresholds are unvalidated placeholders.** 0.95 / 0.75 / 0.80 were chosen
+  by judgement, not measurement. TypeSafe's guidance is that thresholds must be
+  evaluated on real data against the real consequences of each error class. Until
+  that happens, treat every number in `THRESHOLDS` as a guess.
+- **No live Jev call has been made.** All observed routing came from the mock
+  keyword router. The SDK guarantees the wire contract, but nothing here has been
+  exercised against the real model.
 - No offline service worker yet. Protocol components are local, but a cold load
   needs network. A cached shell would let the grid work with no signal at all.
 - Speech recognition is Chrome/Safari only. Firefox users get the typed input.

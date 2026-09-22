@@ -30,8 +30,8 @@ app/
 lib/
   triage/taxonomy.ts        The 3 questions, their option descriptions, thresholds
   triage/resolve.ts         Answers → protocol id. The safety-critical logic.
-  jev/wire.ts               THE ONLY FILE THAT KNOWS THE JEV WIRE FORMAT
-  jev/client.ts             fetch, timeout, auth, error handling
+  jev/client.ts             Wraps @typesafe-ai/sdk. Questions, timeout, normalization
+  jev/types.ts              App-side normalized answer shape
   jev/mock.ts               Offline keyword router for development
   protocols/content.ts      All medical content, one record per protocol
   protocols/provenance.ts   Source + clinical sign-off state per protocol
@@ -45,7 +45,12 @@ hooks/
 
 ### The routing taxonomy
 
-Three `Choice` questions, all answered in **one** Jev pass:
+Three `Choice` questions, all answered in **one** Jev pass via
+[`@typesafe-ai/sdk`](https://www.npmjs.com/package/@typesafe-ai/sdk). Each
+question's `criteria` map is both its label set and its definitions; the
+condition criteria use structured objects with an explicit `not` field, because
+choking and cardiac arrest share almost all their surface vocabulary and differ
+on one thing — whether the heart is still beating.
 
 | Question | Options |
 |---|---|
@@ -96,7 +101,9 @@ npm run dev
 ```
 
 Out of the box `JEV_MOCK=1` runs a deterministic keyword router, so the whole app
-works with no API key. To use the real API, set `JEV_API_KEY` and `JEV_MOCK=0`.
+works with no API key. To use the real API, set `TYPESAFE_API_KEY` and `JEV_MOCK=0`.
+`TYPESAFE_BASE_URL` and `TYPESAFE_DEFAULT_MODEL` are optional — the SDK defaults to
+`https://api.typesafe.ai` and `jev-latest`.
 
 ```bash
 npm test         # resolution logic
@@ -108,16 +115,18 @@ npm run typecheck
 
 Two blockers, both tracked in code:
 
-1. **The Jev wire format is unverified.** `docs.typesafe.ai` was unreachable when
-   this was written. The endpoint, the `state`/`model`/`questions` body shape, the
-   three primitives and the 0–1 confidence are confirmed from TypeSafe's public
-   material. The exact Choice option key, the auth header and the response envelope
-   are assumptions. `lib/jev/wire.ts` currently tolerates several plausible shapes;
-   collapse it to the real one. **It is the only file that needs to change.**
+1. **No live Jev call has ever been made.** The integration uses the official
+   SDK, so the request and response contract is correct by construction, and the
+   client is verified to construct and reach the HTTP layer inside the edge
+   runtime. But `api.typesafe.ai` was blocked by network egress in the
+   environment this was built in, so every result you see above came from the
+   mock router. Allow the host, set `TYPESAFE_API_KEY`, and re-run the probes
+   before trusting any threshold.
 
 2. **No protocol has clinical sign-off.** Every entry in `lib/protocols/provenance.ts`
    is `clinicalReview: "pending"`, and the UI shows a warning banner while that is
-   true. The content is transcribed from AHA / Red Cross / Stop the Bleed guidance to
+   true. The thresholds are also unvalidated placeholders — TypeSafe's guidance is
+   explicit that they must be evaluated against real data and real consequences. The content is transcribed from AHA / Red Cross / Stop the Bleed guidance to
    the best of our ability, but it has not been read back against the primary sources
    by a qualified clinician. See [docs/SAFETY.md](docs/SAFETY.md).
 

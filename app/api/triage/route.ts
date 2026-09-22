@@ -36,7 +36,10 @@ export async function POST(req: Request) {
   const state = text.trim().slice(0, MAX_INPUT);
 
   try {
-    const decision = await triage(state);
+    // Pass the request signal through: when useTriage supersedes a speculative
+    // call, the abort propagates all the way to the Jev request rather than
+    // leaving it to finish and be discarded.
+    const decision = await triage(state, req.signal);
     const payload: TriageResponse = {
       ...resolve(decision.answers),
       latencyMs: decision.latencyMs,
